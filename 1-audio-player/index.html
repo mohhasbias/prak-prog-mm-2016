@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+<head>
+  <title>My Audio Player</title>
+</head>
+<body>
+  <span id="play-button"></span>
+  <span id="range-slider"></span>
+  <span id="time-display"></span>
+
+  <script src="vendor/jquery-3.1.1.min.js"></script>
+  <script type="text/javascript">
+    /* =======================
+     *       app variable
+     * =======================*/
+    var appState = {
+      audio: null
+    };
+
+    /* ==============================
+     *       app functionality
+     * ==============================*/
+    function setAudioSrc(audioFile){
+      appState.audio = new Audio(audioFile);
+      $(document).trigger('APP_STATE_CHANGED');
+      appState.audio.ontimeupdate = function(){
+        $(document).trigger('APP_STATE_CHANGED');
+      };
+      appState.audio.ondurationchange = function(){
+        $(document).trigger('APP_STATE_CHANGED');
+      };
+    }
+
+    function playAudio(){
+      appState.audio.play();
+      $(document).trigger('APP_STATE_CHANGED');
+    }
+
+    function pauseAudio(){
+      appState.audio.pause();
+      $(document).trigger('APP_STATE_CHANGED');
+    }
+
+    function seekTo(value){
+      appState.audio.currentTime = value;
+      $(document).trigger('APP_STATE_CHANGED');
+    }
+
+    /* =====================
+     *      UI Renderer
+     * =====================*/
+    function renderPlayButton(){
+      var $playButton = $('#play-button');
+
+      if(!$playButton.html()){
+        // onload
+        var html;
+        if(appState.audio.paused){
+          html = [
+            '<button type="button" onclick="playAudio()">',
+              'Play',
+            '</button>'
+          ].join('');
+        } else {
+          html = [
+            '<button type="button" onclick="pauseAudio()">',
+              'Pause',
+            '</button>'
+          ].join('');
+        }
+        $playButton.html(html);
+      } else {
+        // on re-render
+        $playButton.find('button')
+          .attr('onclick',
+            appState.audio.paused?
+              'playAudio()' :
+              'pauseAudio()'
+          )
+          .html(
+            appState.audio.paused?
+              'Play' :
+              'Pause'
+          );
+      }
+    }
+
+    function renderRangeSlider(){
+      var duration = appState.audio.duration;
+      var currentTime = appState.audio.currentTime;
+
+      var $rangeSlider = $('#range-slider');
+      if(!$rangeSlider.html()){
+        // on load
+        var html = [
+          '<input type="range" min="0"',
+          ' max="', duration, '"',
+          ' value="', currentTime ,'"',
+          ' onmousedown="pauseAudio()"',
+          ' oninput="seekTo(this.value)"',
+          ' onchange="playAudio()">'
+        ].join('');
+
+        $rangeSlider.html(html);
+      } else {
+        // on re-render
+        $rangeSlider.find('input[type="range"]')
+          .attr('max', duration)
+          .attr('value', currentTime)
+          .val(currentTime);
+      }
+    }
+
+    function renderTime(){
+      var currentTime = timeFormat(appState.audio.currentTime);
+      var duration = timeFormat(appState.audio.duration);
+
+      var html = [
+        currentTime, '/', duration
+      ].join('');
+
+      $timeDisplay = $('#time-display');
+      $timeDisplay.html(html);
+    }
+
+    /* =====================
+     *       helpers
+     * =====================*/
+    function timeFormat(seconds){
+      var d = new Date(null);
+      d.setSeconds(seconds);
+
+      return [
+        zeroPad(d.getMinutes()),
+        ':',
+        zeroPad(d.getSeconds())
+      ].join('');
+    }
+
+    function zeroPad(value){
+      if(value < 10){
+        return '0' + value;
+      } else {
+        return value;
+      }
+    }
+
+    /* =================================================
+     *    Attach UI Render on each APP_STATE_CHANGED
+     * =================================================*/
+    $(document).on('APP_STATE_CHANGED', function(){
+      renderPlayButton();
+      renderRangeSlider();
+      renderTime();
+    });
+
+    /* ===================
+     *    app first load
+     * ===================*/
+    $(function(){
+      setAudioSrc('audio/indonesia-raya.ogg');
+    });
+  </script>
+</body>
+</html>

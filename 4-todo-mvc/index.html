@@ -1,0 +1,229 @@
+<!doctype html>
+<html>
+<head>
+  <title>My Todo MVC</title>
+
+  <link rel="stylesheet" href="vendor/base.css">
+  <link rel="stylesheet" href="vendor/index.css">
+</head>
+<body>
+  <section id="todoapp">
+		<header id="header">
+			<h1>todos</h1>
+			<input id="new-todo" placeholder="What needs to be done?"
+        autofocus="" onchange="addTodo(this.value);this.value='';">
+		</header>
+		<section id="main" style="display: block;">
+			<input id="toggle-all" type="checkbox">
+			<label for="toggle-all">Mark all as complete</label>
+			<ul id="todo-list">
+    		<li class="completed" data-id="9df9b03c-5af5-4712-8365-9bf28d85f7b7">
+    			<div class="view">
+    				<input class="toggle" type="checkbox" checked="">
+    				<label>belajar HTML5</label>
+    				<button class="destroy"></button>
+    			</div>
+    			<input class="edit" value="belajar HTML5">
+    		</li>
+    		<li data-id="84c870fb-ee81-4e0a-8353-23e6c7bd8d7c">
+    			<div class="view">
+    				<input class="toggle" type="checkbox">
+    				<label>belajar jQuery</label>
+    				<button class="destroy"></button>
+    			</div>
+    			<input class="edit" value="belajar jQuery">
+    		</li>
+    		<li data-id="c936dc19-66c4-4e46-a69e-9cbc99b42fa0">
+    			<div class="view">
+    				<input class="toggle" type="checkbox">
+    				<label>belajar Chartist</label>
+    				<button class="destroy"></button>
+    			</div>
+    			<input class="edit" value="belajar Chartist">
+    		</li>
+    	</ul>
+		</section>
+		<footer id="footer" style="display: block;">
+  		<span id="todo-count"><strong>2</strong> items left</span>
+  		<ul id="filters">
+  			<li>
+  				<a class="selected" href="#/all">All</a>
+  			</li>
+  			<li>
+  				<a href="#/active">Active</a>
+  			</li>
+  			<li>
+  				<a href="#/completed">Completed</a>
+  			</li>
+  		</ul>
+  		<button id="clear-completed">Clear completed</button>
+  	</footer>
+  </section>
+
+  <script src="vendor/jquery-3.1.1.min.js"></script>
+  <script type="text/javascript">
+    /* =============================
+     *      app variables
+     * =============================*/
+    var appState = {
+      todoList: [
+        {
+          title: 'belajar HTML5',
+          completed: true
+        },
+        {
+          title: 'belajar jQuery',
+          completed: false
+        },
+        {
+          title: 'belajar Chartist',
+          completed: false
+        }
+      ],
+      activeFilter: 'ALL'
+    };
+
+    /* =============================
+     *      computed app variables
+     * =============================*/
+    function getFilteredTodoList(){
+      return appState.todoList.filter(function(todo){
+        switch(appState.activeFilter){
+          case 'ALL':
+            return true;
+          case 'ACTIVE':
+            return !todo.completed;
+          case 'COMPLETED':
+            return todo.completed;
+        }
+      });
+    }
+
+    /* =============================
+     *      app functionality
+     * =============================*/
+    function toggleTodo(index){
+      appState.todoList[index].completed =
+        !appState.todoList[index].completed;
+      $(document).trigger('APP_STATE_CHANGED');
+    }
+
+    function deleteTodo(index){
+      appState.todoList.splice(index,1);
+      $(document).trigger('APP_STATE_CHANGED');
+    }
+
+    function addTodo(title){
+      appState.todoList.push({
+        title: title,
+        completed: false
+      });
+      $(document).trigger('APP_STATE_CHANGED');
+    }
+
+    function filterTodo(filter){
+      appState.activeFilter = filter;
+      $(document).trigger('APP_STATE_CHANGED');
+    }
+
+    /* =============================
+     *      UI Renderer
+     * =============================*/
+    function renderTodoList(){
+      var $todoList = $('#todo-list');
+      var filteredTodoList = getFilteredTodoList();
+
+      var html = filteredTodoList.map(function(todo, index){
+        var completed = todo.completed? 'completed' : '';
+        var checked = todo.completed? 'checked="checked"' : '';
+        return [
+          '<li data-id="', index ,'" class="', completed,'">',
+            '<div class="view">',
+              '<input class="toggle" type="checkbox" ', checked,
+                ' onclick="toggleTodo(', index,')">',
+              '<label>', todo.title ,'</label>',
+              '<button class="destroy" onclick="deleteTodo(',
+                index,')"></button>',
+            '</div>',
+            '<input class="edit" value="', todo.title ,'">',
+          '</li>'
+        ].join('');
+      });
+
+      $todoList.html(html);
+    }
+
+    function renderTodoCount(){
+      var $todoCount = $('#todo-count');
+      var totalTodo = getFilteredTodoList().length;
+
+      var html = [
+        totalTodo,
+        ' item', totalTodo > 1? 's' : '',
+        ' left'
+      ].join('');
+
+      $todoCount.html(html);
+    }
+
+    function renderFilters(){
+      var $filters = $('#filters');
+      var filterOptions = [
+        {
+          label: 'All',
+          value: 'ALL'
+        },
+        {
+          label: 'Active',
+          value: 'ACTIVE'
+        },
+        {
+          label: 'Completed',
+          value: 'COMPLETED'
+        }
+      ];
+
+      var activeFilter = appState.activeFilter;
+      var html = filterOptions.map(function(filter){
+        if(activeFilter === filter.value){
+          return [
+            '<li>',
+              '<a href=javascript:void(0); class="selected">',
+                filter.label,
+              '</a>',
+            '</li>'
+          ].join('');
+        } else {
+          return [
+            '<li>',
+      			  '<a href="javascript:filterTodo(\'',filter.value,'\')">',
+                    filter.label,
+              '</a>',
+      			'</li>'
+          ].join('');
+        }
+      });
+
+      $filters.html(html);
+    }
+
+    /* =============================
+     *      helpers
+     * =============================*/
+
+    /* ==========================================================
+     *      Attach UI Render to every APP_STATE_CHANGED event
+     * ==========================================================*/
+    $(document).on('APP_STATE_CHANGED', function(){
+      renderTodoList();
+      renderTodoCount();
+      renderFilters();
+    });
+
+    /* =============================
+     *      app first load
+     * =============================*/
+     $(document).trigger('APP_STATE_CHANGED');
+  </script>
+</body>
+</html>

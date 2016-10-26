@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+  <title>My Todo MVC</title>
+
+  <link rel="stylesheet" href="vendor/base.css">
+  <link rel="stylesheet" href="vendor/index.css">
+</head>
+<body>
+  <section id="todoapp">
+		<header id="header">
+			<h1>todos</h1>
+			<input id="new-todo" placeholder="What needs to be done?" autofocus="">
+		</header>
+		<section id="main" style="display: block;">
+			<input id="toggle-all" type="checkbox">
+			<label for="toggle-all">Mark all as complete</label>
+			<ul id="todo-list">
+    		<li class="completed" data-id="9df9b03c-5af5-4712-8365-9bf28d85f7b7">
+    			<div class="view">
+    				<input class="toggle" type="checkbox" checked="">
+    				<label>belajar HTML5</label>
+    				<button class="destroy"></button>
+    			</div>
+    			<input class="edit" value="belajar HTML5">
+    		</li>
+    		<li data-id="84c870fb-ee81-4e0a-8353-23e6c7bd8d7c">
+    			<div class="view">
+    				<input class="toggle" type="checkbox">
+    				<label>belajar jQuery</label>
+    				<button class="destroy"></button>
+    			</div>
+    			<input class="edit" value="belajar jQuery">
+    		</li>
+    		<li data-id="c936dc19-66c4-4e46-a69e-9cbc99b42fa0">
+    			<div class="view">
+    				<input class="toggle" type="checkbox">
+    				<label>belajar Chartist</label>
+    				<button class="destroy"></button>
+    			</div>
+    			<input class="edit" value="belajar Chartist">
+    		</li>
+    	</ul>
+		</section>
+		<footer id="footer" style="display: block;">
+  		<span id="todo-count"><strong>2</strong> items left</span>
+  		<ul id="filters">
+  			<li>
+  				<a class="selected" href="#/all">All</a>
+  			</li>
+  			<li>
+  				<a href="#/active">Active</a>
+  			</li>
+  			<li>
+  				<a href="#/completed">Completed</a>
+  			</li>
+  		</ul>
+  		<button id="clear-completed">Clear completed</button>
+  	</footer>
+  </section>
+</body>
+</html>

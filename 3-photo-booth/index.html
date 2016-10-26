@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+<head>
+  <title>HTML5 Photo Booth</title>
+</head>
+<body>
+  <div>
+    <video id="live-video" autoplay></video>
+    <canvas id="temp-canvas" style="display: none;"></canvas>
+  </div>
+
+  <button type="button" onclick="takeAPicture()">
+    Take a picture!
+  </button>
+  <div id="film-roll"></div>
+
+  <script src="vendor/jquery-3.1.1.min.js"></script>
+  <script type="text/javascript">
+    /* =======================
+     *       app variable
+     * =======================*/
+    var appState = {
+      video: $('#live-video').get(0),
+      canvas: $('#temp-canvas').get(0),
+      filmRoll: []
+    }
+
+    /* ==============================
+     *       app functionality
+     * ==============================*/
+    function loadCamera(){
+      navigator.mediaDevices.getUserMedia({
+          video: {
+            width: {
+              max: 400
+            }
+          }
+        })
+        .then(function(stream) {
+          appState.video.srcObject = stream;
+          $(document).trigger('APP_STATE_CHANGED');
+        })
+        .catch(function(err) {
+          console.log("Unable to get video stream!");
+        });
+    }
+
+    function takeAPicture(){
+      var canvas = appState.canvas;
+      var video = appState.video;
+      var width = video.videoWidth;
+      var height = video.videoHeight;
+      var context = canvas.getContext('2d');
+
+      canvas.width = width;
+      canvas.height = height;
+
+      context.drawImage(video, 0, 0, width, height);
+
+      appState.filmRoll.unshift(canvas.toDataURL('image/png'));
+
+      $(document).trigger('APP_STATE_CHANGED');
+    }
+
+    /* =====================
+     *      UI Renderer
+     * =====================*/
+    function renderFilmRoll(){
+      var $filmRoll = $('#film-roll');
+
+      var html = [
+        '<ul>',
+        appState.filmRoll.map(function(film, index){
+          return [
+            '<li>',
+            '  <img alt="film', index, '"',
+            '    src="' + film +'">',
+            '</li>'
+          ].join('');
+        }).join(''),
+        '</ul>'
+      ].join('');
+
+      // insert html
+      $filmRoll.html(html);
+
+      var thumbnailHeight = appState.video.videoHeight/2;
+      var thumbnailWidth = appState.video.videoWidth/2;
+
+      // modify CSS styles
+      $filmRoll
+        .css('height', thumbnailHeight + 15)
+        .css('overflow', 'hidden')
+        .css('overflow-x', 'scroll');
+
+      $filmRoll.find('ul')
+        .css('list-style-type', 'none')
+        .css('margin', 0)
+        .css('padding', 0)
+        .css('width', thumbnailWidth*(appState.filmRoll.length+1));
+
+      $filmRoll.find('ul li')
+        .css('float', 'left');
+
+      $filmRoll.find('ul li img')
+        .attr('width', thumbnailWidth)
+        .css('margin', '0 1px');
+    }
+
+    /* =====================
+     *       helpers
+     * =====================*/
+
+    /* =======================================================
+     *    Attach UI Render to every APP_STATE_CHANGED event
+     * =======================================================*/
+    $(document).on('APP_STATE_CHANGED', function(){
+      renderFilmRoll();
+    });
+
+    /* ===================
+     *    app first load
+     * ===================*/
+    loadCamera();
+
+  </script>
+</body>
+</html>

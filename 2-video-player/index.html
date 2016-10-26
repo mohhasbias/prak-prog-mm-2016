@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+<head>
+  <title>My Video Player</title>
+</head>
+<body>
+  <video id="video-display"></video>
+  <div>
+    <span id="play-button"></span>
+    <span id="range-slider"></span>
+    <span id="time-display"></span>
+  </div>
+
+  <script src="vendor/jquery-3.1.1.min.js"></script>
+  <script type="text/javascript">
+    /* =======================
+     *       app variable
+     * =======================*/
+    var appState = {
+      video: $('#video-display').get(0)
+    };
+
+    /* ==============================
+     *       app functionality
+     * ==============================*/
+    function setVideoSrc(videoFile){
+      appState.video.src = videoFile;
+      $(document).trigger('APP_STATE_CHANGED');
+      appState.video.ondurationchange = function(){
+        $(document).trigger('APP_STATE_CHANGED');
+      };
+      appState.video.ontimeupdate = function(){
+        $(document).trigger('APP_STATE_CHANGED');
+      };
+    }
+
+    function playVideo(){
+      appState.video.play();
+      $(document).trigger('APP_STATE_CHANGED');
+    }
+
+    function pauseVideo(){
+      appState.video.pause();
+      $(document).trigger('APP_STATE_CHANGED');
+    }
+
+    function seekTo(value){
+      appState.video.currentTime = value;
+      $(document).trigger('APP_STATE_CHANGED');
+    }
+
+    /* =====================
+     *      UI Renderer
+     * =====================*/
+    function renderPlayButton(){
+      var $playButton = $('#play-button');
+
+      if(!$playButton.html()){
+        // first load
+        var html = [
+          '<button type="button" onclick="playVideo()">',
+          'Play',
+          '</button>'
+        ].join('');
+        $playButton.html(html);
+      } else {
+        // re-render
+        $playButton.find('button')
+          .attr('onclick', appState.video.paused? 'playVideo()' : 'pauseVideo()')
+          .html(appState.video.paused? 'Play' : 'Pause');
+      }
+    }
+
+    function renderRangeSlider(){
+      var $rangeSlider = $('#range-slider');
+
+      if(!$rangeSlider.html()){
+        // first load
+        var html = [
+          '<input type="range"',
+          ' min="0"',
+          ' max="', appState.video.duration ,'"',
+          ' value=0',
+          ' onmousedown="pauseVideo()"',
+          ' oninput="seekTo(this.value)"',
+          ' onchange="playVideo()"',
+          '>'
+        ].join('');
+        $rangeSlider.html(html);
+      } else {
+        // re-render
+        $rangeSlider.find('input[type="range"]')
+          .attr('max', appState.video.duration)
+          .attr('value', appState.video.currentTime);
+      }
+    }
+
+    function renderTimeDisplay(){
+      var $timeDisplay = $('#time-display');
+
+      var html = [
+        timeFormat(appState.video.currentTime),
+        '/',
+        timeFormat(appState.video.duration)
+      ].join('');
+
+      $timeDisplay.html(html);
+    }
+
+    /* =====================
+     *       helpers
+     * =====================*/
+    function timeFormat(value){
+      var d = new Date(null);
+      d.setSeconds(value);
+
+      return [
+        zeroPad(d.getMinutes()),
+        ':',
+        zeroPad(d.getSeconds())
+      ].join('');
+    }
+
+    function zeroPad(value){
+      return value < 10? '0'+value : value;
+    }
+
+
+    /* =======================================================
+     *    Attach UI Render to every APP_STATE_CHANGED event
+     * =======================================================*/
+    $(document).on('APP_STATE_CHANGED', function(){
+      renderPlayButton();
+      renderRangeSlider();
+      renderTimeDisplay();
+    });
+
+    /* ===================
+     *    app first load
+     * ===================*/
+    $(function(){
+      setVideoSrc('video/indonesia-raya.mp4');
+    });
+  </script>
+</body>
+</html>
