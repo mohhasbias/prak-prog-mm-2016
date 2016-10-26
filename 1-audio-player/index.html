@@ -53,21 +53,12 @@
       var $playButton = $('#play-button');
 
       if(!$playButton.html()){
-        // onload
-        var html;
-        if(appState.audio.paused){
-          html = [
-            '<button type="button" onclick="playAudio()">',
-              'Play',
-            '</button>'
-          ].join('');
-        } else {
-          html = [
-            '<button type="button" onclick="pauseAudio()">',
-              'Pause',
-            '</button>'
-          ].join('');
-        }
+        var html = [
+          '<button type="button" onclick="playAudio()">',
+            'Play',
+          '</button>'
+        ].join('');
+
         $playButton.html(html);
       } else {
         // on re-render
